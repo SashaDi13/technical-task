@@ -1,0 +1,27 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+
+        <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}">
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    </head>
+    <body>
+        <main>
+            <div class="bg-body-tertiary p-5 rounded">
+                <h1>{{ title }}</h1>
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <input type="submit" value="Save">
+                </form>
+            </div>
+        </main>
+
+        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    </body>
+</html>

@@ -1,0 +1,9 @@
+Django>=5.2
+django-crispy-forms
+crispy-bootstrap5
+requests
+beautifulsoup4
+PyMySQL
+cryptography
+django-rq
+redis

@@ -1,0 +1,75 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Real Estate Aggregator</title>
+
+        <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}">
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    </head>
+    <body>
+        <main>
+            <div class="py-5 text-center container">
+                <div class="row py-lg-5">
+                    <div class="col-lg-6 col-md-8 mx-auto">
+                        <h1 class="fw-light">{{ title }}</h1>
+                        <p class="lead text-body-secondary">{{ description }}</p>
+                        <div>
+                            <a id="run-scraper" href="{% url 'run_scrapper' %}" class="btn btn-primary my-2"
+                               data-home-url="{% url 'home' %}" data-run-url="{% url 'run_scrapper' %}">
+                                Run Parser
+                            </a>
+                            <a href="{% url 'add_property' %}" class="btn btn-secondary my-2">Add Property</a>
+                        </div>
+                        <div id="loader" style="display:none; margin-top:20px;">
+                            <img src="{% static 'img/loading.gif' %}" width="80">
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="album py-5 bg-body-tertiary">
+                <div class="container">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+                        {% for record in records %}
+                            <div class="col">
+                                <div class="card shadow-sm h-100">
+                                    <img src="{% if record.image_url %}{{ record.image_url }}{% else %}{% static 'img/default-image.jpg' %}{% endif %}" alt="{{ record.title }}" class="bd-placeholder-img card-img-top card-image">
+
+                                    <div class="card-body d-flex flex-column justify-content-between">
+                                        <h5 class="card-title">{{ record.title }}</h5>
+
+                                        <div class="price">{{ record.price }}</div>
+                                        <div class="address">{{ record.address }}</div>
+                                        <p class="card-text">{{ record.description }}</p>
+
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a href="{{ record.url }}" target="_blank" role="button" class="btn btn-sm btn-outline-secondary">View</a>
+                                            <div class="btn-group">
+                                                <a href="{% url 'update_property' record.id %}" role="button" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                                <button href="{% url 'delete_property' record.id %}" role="button" class="btn btn-sm btn-outline-secondary"
+                                                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ record.id }}">
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% include 'delete_property_modal.html' %}
+                        {% endfor %}
+                    </div>
+
+                    {% include 'pagination.html' %}
+                </div>
+            </div>
+        </main>
+
+        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'js/run_scrapper.js' %}"></script>
+
+    </body>
+</html>

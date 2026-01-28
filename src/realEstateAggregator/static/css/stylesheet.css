@@ -1,0 +1,16 @@
+.card-image {
+    height: 225px;
+    object-fit: cover;
+}
+
+.price {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #198754;
+}
+
+.address {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}

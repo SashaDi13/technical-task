@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: scraper_db
+      MYSQL_USER: scraper
+      MYSQL_PASSWORD: scraper
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./src:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DB_HOST: db
+      REDIS_HOST: redis
+
+
+volumes:
+  mysql_data:

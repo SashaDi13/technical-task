@@ -3,11 +3,8 @@ version: "3.9"
 services:
   db:
     image: mysql:8.0
-    environment:
-      MYSQL_DATABASE: scraper_db
-      MYSQL_USER: scraper
-      MYSQL_PASSWORD: scraper
-      MYSQL_ROOT_PASSWORD: root_password
+    env_file:
+      - .env
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -34,9 +31,19 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-    environment:
-      DB_HOST: db
-      REDIS_HOST: redis
+    env_file:
+      - .env
+  
+  celery:
+    build: .
+    command: celery -A config worker -l info
+    volumes:
+      - ./src:/app
+    depends_on:
+      - redis
+      - db
+    env_file:
+      - .env
 
 
 volumes:

@@ -1,14 +1,11 @@
-from pydoc import describe
 
-from django.core.paginator import Paginator
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
-import django_rq
-import csv
-from .models import *
-from .forms import *
-from .tasks import real_estate_scraper
+from django.core.paginator import Paginator
+from django.shortcuts import redirect, render
+from scrapper.tasks import run_scraper_task
+
+from .forms import PropertyCreateForm, PropertyUpdateForm
+from .models import Property
 
 
 def home(request):

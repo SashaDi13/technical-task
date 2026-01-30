@@ -27,7 +27,7 @@ def home(request):
 
 
 def run_scrapper(request):
-    real_estate_scraper()
+    run_scraper_task.delay()
 
     return redirect('home')
 

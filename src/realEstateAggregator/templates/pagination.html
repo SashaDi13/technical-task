@@ -11,7 +11,11 @@
             </a>
         </li>
         {% for page_number in records.paginator.page_range %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a></li>
+            {% if page_number == records.number  %}
+                <li class="page-item"><p class="page-link text-body-secondary">{{ page_number }}</p></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a></li>
+            {% endif %}
         {% endfor %}
         <li class="page-item {% if not records.has_next %}disabled{% endif %}">
             <a class="page-link"

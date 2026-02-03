@@ -1,11 +1,15 @@
 import asyncio
+import logging
+import re
 from typing import Generator
 from urllib.parse import urljoin
 
-import aiohttp
+from asgiref.sync import sync_to_async
 from bs4 import BeautifulSoup
+from playwright.async_api import async_playwright
 
-from .models import Property
+from realEstateAggregator.models import Property
+
 from .schemas import PropertySchema
 
 HEADERS = {
@@ -15,72 +19,143 @@ HEADERS = {
 
 URL_ROOT = "https://www.lemasson-conseil.com/"
 
+logger = logging.getLogger(__name__)
+
 async def run_scraper_async(max_pages=3):
-    urls = [urljoin(URL_ROOT, f"vente/page-{i}/") for i in range(1, max_pages + 1)]
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        context = await browser.new_context(extra_http_headers=HEADERS)
 
-    async with aiohttp.ClientSession() as session:
-        tasks = [fetch_page(session, url) for url in urls]
+        urls = [urljoin(URL_ROOT, f"vente/{i}") for i in range(1, max_pages + 1)]
 
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for url in urls:
+            soup = await fetch_page(context, url)
+            if not soup:
+                break
 
-        for page in results:
-            if isinstance(page, Exception) or page is None:
-                continue
-            for data in parse_listing(page):
-                save_property(data)
+            for data in parse_listing(soup):
+                await save_property_async(data)
+
+        await browser.close()
 
 
-async def fetch_page(session: aiohttp.ClientSession, url: str) -> BeautifulSoup:
+async def fetch_page(context, url: str) -> BeautifulSoup | None:
     try:
-        async with session.get(url, headers=HEADERS, timeout=10) as response:
-            response.raise_for_status()
-            text = await response.text()
-            return BeautifulSoup(text, "html.parser")
+        page = await context.new_page()
+        await page.goto(url, timeout=60000)
+        
+        await page.evaluate("""() => {
+            const conf = window.CONF || {};
+            if (conf.settings) conf.settings.lang = 'en';
+
+            const container = document.querySelector('.ss-content');
+            if (container) {
+                container.classList.add('ss-open');
+                container.style.display = 'block';
+                container.style.opacity = '1';
+            }
+
+            const enOption = document.querySelector(
+                '.ss-option.lang-switch__option--en:not(.ss-disabled)'
+            );
+            enOption?.click();
+        }""")
+
+        await asyncio.sleep(2)
+
+        await page.wait_for_selector(".property-listing-v2__items", timeout=60000)
+
+        await asyncio.sleep(2)
+
+        html = await page.content()
+
+        if "property-listing" not in html:
+            logger.info(f"[EMPTY PAGE] {url}")
+            return None
+
+        return BeautifulSoup(html, "html.parser")
+
     except Exception as e:
-        print(f"Failed to fetch {url}: {e}")
+        logger.exception(f"[FETCH FAILED] {url}: {e}")
         return None
+
+    finally:
+        if page:
+            await page.close()
 
 
 def parse_listing(soup: BeautifulSoup) -> Generator[dict, None, None]:
-    properties = soup.find_all("article", {"class": "property-listing-v2_container"})
+    properties = soup.select("article.property-listing-v2__container")
 
-    for property in properties:
+    for prop in properties:
         try:
+            price_raw = safe_text(prop.select_one("span.__price-value"))
+            url = prop.select_one("a.item__title")["href"]
+
             yield {
-                "title": property.find("span", {"class": "title__content-2"})
-                            .get_text(strip=True),
-                "address": property.find("span", {"class": "title__content-1"})
-                            .get_text(strip=True),
-                "description": property.find("div", {"class": "item__text-block"})
-                            .get_text(strip=True),
-                "price": property.find("span", {"class": "__price-value"})
-                            .get_text(strip=True),
+                "title": safe_text(prop.select_one("span.title__content-2")),
+                "address": safe_text(prop.select_one("span.title__content-1")),
+                "description": safe_text(prop.select_one("div.item__text-block")),
+                "price": get_price(price_raw),
+                "currency": get_currency(price_raw),
                 "url": urljoin(
-                    URL_ROOT, 
-                    property.find("a", {"class": "item__title"})["href"]
+                    URL_ROOT,
+                    url
                 ),
-                "image_url": property.find("img", {"class": "decorate__img"})["src"]
+                "object_id": get_object_id(url),
+                "image_url": safe_image_url(prop.select_one("img.decorate__img")["src"])
             }
+
         except Exception as e:
-            print(f"Failed to parse property: {e}")
+            logger.exception(f"[PARSE FAILED] {e}")
             continue
 
 
-def save_property(data: dict) -> None:
+def get_price(price_value: str) -> int | None:
+    import re
+    price_match = re.search(r"[\d\s,.]+", price_value)
+    if not price_match:
+        return None
+
+    cleaned = price_match.group(0).replace(" ", "").replace(",", "")
+    return int(cleaned)
+
+
+def get_currency(price_value: str) -> str:
+    currency_match = re.search(r"[^\d\s,.]+", price_value)
+    return currency_match.group(0) if currency_match else None
+
+
+def get_object_id(url: str) -> str:
+    match = re.search(r'/(\d+)-[^/]+/?$', url)
+    return int(match.group(1))
+
+
+async def save_property_async(data) -> None:
     try:
-        validated_data = PropertySchema(**data)
-        Property.objects.update_or_create(
-            url=data["url"],
-            defaults=validated_data.dict()
+        schema = PropertySchema(**data)
+        validated_data = schema.dict()
+
+        await sync_to_async(Property.objects.update_or_create)(
+            object_id=validated_data["object_id"],
+            defaults=validated_data,
         )
-    except Exception as e:
-        print(f"Failed to validate or save property: {e}")
+
+    except Exception:
+        logger.exception("Failed to validate or save property")
 
 
-def get_next_page(soup: BeautifulSoup) -> str | None:
-    btn_next = soup.find_all("a", {"class": "pagination__link"})[-1]
+def safe_text(el):
+    return el.get_text(strip=True) if el else None
 
-    if btn_next and btn_next["href"]:
-        return urljoin(URL_ROOT, btn_next["href"])
 
-    return None
+def safe_image_url(url: str) -> str | None:
+    if not url:
+        return None
+
+    if url.startswith("//"):
+        return "https:" + url
+
+    if url.startswith("/"):
+        return urljoin(URL_ROOT, url)
+    return url

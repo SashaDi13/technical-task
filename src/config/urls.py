@@ -17,13 +17,27 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from realEstateAggregator import views
+from realEstateAggregator.views import (
+    AddPropertyView,
+    DeletePropertyView,
+    HomeView,
+    RunScraperView,
+    UpdatePropertyView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
-    path('run_scrapper/', views.run_scrapper, name='run_scrapper'),
-    path('add_property/', views.add_property, name='add_property'),
-    path('update_property/<str:id>', views.update_property, name='update_property'),
-    path('delete_property/<str:id>', views.delete_property, name='delete_property'),
+    path('', HomeView.as_view(), name='home'),
+    path('run_scrapper/', RunScraperView.as_view(), name='run_scrapper'),
+    path('add_property/', AddPropertyView.as_view(), name='add_property'),
+    path(
+        'update_property/<str:id>', 
+        UpdatePropertyView.as_view(), 
+        name='update_property'
+    ),
+    path(
+        'delete_property/<str:id>', 
+        DeletePropertyView.as_view(), 
+        name='delete_property'
+    )
 ]

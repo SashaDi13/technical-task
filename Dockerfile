@@ -8,6 +8,8 @@ WORKDIR /app
 COPY requirements.txt /app
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
+RUN playwright install --with-deps
+
 FROM base as dev
 COPY requirements-dev.txt /app
 RUN pip install -r requirements-dev.txt

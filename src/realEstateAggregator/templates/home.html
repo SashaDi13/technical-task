@@ -16,11 +16,14 @@
                     <div class="col-lg-6 col-md-8 mx-auto">
                         <h1 class="fw-light">{{ title }}</h1>
                         <p class="lead text-body-secondary">{{ description }}</p>
-                        <div>
-                            <a id="run-scraper" href="{% url 'run_scrapper' %}" class="btn btn-primary my-2"
-                               data-home-url="{% url 'home' %}" data-run-url="{% url 'run_scrapper' %}">
-                                Run Parser
-                            </a>
+                        <div class="d-flex justify-content-center">
+                            <form method="post" action="{% url 'run_scrapper' %}" class="me-2">
+                                {% csrf_token %}
+                                <button id="run-scraper" type="submit" class="btn btn-primary my-2"
+                                    data-home-url="{% url 'home' %}" data-run-url="{% url 'run_scrapper' %}">
+                                    Run scraper
+                                </button>
+                            </form>
                             <a href="{% url 'add_property' %}" class="btn btn-secondary my-2">Add Property</a>
                         </div>
                         <div id="loader" style="display:none; margin-top:20px;">

@@ -28,15 +28,15 @@ from realEstateAggregator.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', HomeView.as_view(), name='home'),
-    path('run_scrapper/', RunScraperView.as_view(), name='run_scrapper'),
+    path('run_scraper/', RunScraperView.as_view(), name='run_scraper'),
     path('add_property/', AddPropertyView.as_view(), name='add_property'),
     path(
-        'update_property/<str:id>', 
+        'update_property/<int:id>', 
         UpdatePropertyView.as_view(), 
         name='update_property'
     ),
     path(
-        'delete_property/<str:id>', 
+        'delete_property/<int:id>', 
         DeletePropertyView.as_view(), 
         name='delete_property'
     )

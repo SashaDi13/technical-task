@@ -1,3 +1,5 @@
 ruff
 isort
 pytest
+pytest-django
+pytest-asyncio

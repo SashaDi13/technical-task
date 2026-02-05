@@ -7,11 +7,11 @@ from django.db import migrations
 
 def fill_object_id(apps, schema_editor):
     Property = apps.get_model('realEstateAggregator', 'Property')
-    for prop in Property.objects.all():
-        match = re.search(r'/(\d+)-[^/]+/?$', prop.url)
+    for property in Property.objects.all():
+        match = re.search(r'/(\d+)-[^/]+/?$', property.url)
         if match:
-            prop.object_id = int(match.group(1))
-            prop.save(update_fields=['object_id'])
+            property.object_id = int(match.group(1))
+            property.save(update_fields=['object_id'])
 
 
 class Migration(migrations.Migration):

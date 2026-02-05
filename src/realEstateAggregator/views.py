@@ -13,16 +13,16 @@ class HomeView(View):
     def get(self, request, *args, **kwargs):
         title = "Real Estate"
         description = "Click button to refresh the Real Estate list"
-        records_qs = Property.objects.all().order_by("-id")
+        properties_qs = Property.objects.all().order_by("-id")
 
-        paginator = Paginator(records_qs, 9)
+        paginator = Paginator(properties_qs, 9)
         page_number = request.GET.get("page")
-        records = paginator.get_page(page_number)
+        properties = paginator.get_page(page_number)
         
         context = {
             'title': title, 
             'description': description,
-            'records': records,
+            'properties': properties,
         }
         
         return render(request, 'home.html', context)
@@ -76,10 +76,10 @@ class UpdatePropertyView(View):
 
 
 class DeletePropertyView(View):
-    template_name = 'delete_property.html'
+    template_name = 'delete_property_modal.html'
 
     def get(self, request, *args, **kwargs):
-        property = Property.objects.get(id=kwargs.get('id'))
+        property = Property.objects.get(id=kwargs['id'])
         context = {'property': property}
         return render(request, self.template_name, context)
 

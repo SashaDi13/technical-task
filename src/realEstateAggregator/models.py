@@ -7,10 +7,10 @@ from django.db import models
 class Property(models.Model):
     title = models.CharField(max_length=200, blank=False, null=False)
     currency = models.CharField(default="USD", max_length=200)
-    price = models.IntegerField(null=True, blank=True)
+    price = models.IntegerField(default=0, null=False, blank=False)
     url = models.URLField(blank=False, null=False)
     object_id = models.IntegerField(unique=True, blank=False, null=False)
-    address = models.CharField(max_length=500, blank=False, null=False)
+    address = models.CharField(max_length=500, blank=True, null=True)
     description = models.TextField(blank=True)
     image_url = models.URLField(blank=True, null=True)
 
@@ -32,15 +32,15 @@ class Property(models.Model):
     def __str__(self):
         return self.title
 
-    def extract_object_id(url: str) -> int:
-        match = re.search(r'/(\d+)-', url)
+    def extract_object_id(self) -> int:
+        match = re.search(r'/(\d+)-[^/]+/?$', self.url)
         if not match:
             raise ValidationError("Cannot extract object_id from URL")
         return int(match.group(1))
 
     def clean(self):
         if not self.object_id:
-            self.object_id = self.extract_object_id(self.url)
+            self.object_id = self.extract_object_id()
 
     def save(self, *args, **kwargs):
         self.full_clean()

@@ -1,6 +1,4 @@
-import asyncio
-import logging
-import re
+import asyncio, logging, re, os
 from typing import Generator
 from urllib.parse import urljoin
 
@@ -17,8 +15,6 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-URL_ROOT = "https://www.lemasson-conseil.com/"
-
 logger = logging.getLogger(__name__)
 
 async def run_scraper_async(max_pages=3):
@@ -26,7 +22,7 @@ async def run_scraper_async(max_pages=3):
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(extra_http_headers=HEADERS)
 
-        urls = [urljoin(URL_ROOT, f"vente/{i}") for i in range(1, max_pages + 1)]
+        urls = [urljoin(os.getenv('URL_ROOT'), f"vente/{i}") for i in range(1, max_pages + 1)]
 
         for url in urls:
             soup = await fetch_page(context, url)
@@ -87,23 +83,23 @@ async def fetch_page(context, url: str) -> BeautifulSoup | None:
 def parse_listing(soup: BeautifulSoup) -> Generator[dict, None, None]:
     properties = soup.select("article.property-listing-v2__container")
 
-    for prop in properties:
+    for property in properties:
         try:
-            price_raw = safe_text(prop.select_one("span.__price-value"))
-            url = prop.select_one("a.item__title")["href"]
+            price_raw = safe_text(property.select_one("span.__price-value"))
+            url = property.select_one("a.item__title")["href"]
 
             yield {
-                "title": safe_text(prop.select_one("span.title__content-2")),
-                "address": safe_text(prop.select_one("span.title__content-1")),
-                "description": safe_text(prop.select_one("div.item__text-block")),
+                "title": safe_text(property.select_one("span.title__content-2")),
+                "address": safe_text(property.select_one("span.title__content-1")),
+                "description": safe_text(property.select_one("div.item__text-block")),
                 "price": get_price(price_raw),
                 "currency": get_currency(price_raw),
                 "url": urljoin(
-                    URL_ROOT,
+                    os.getenv('URL_ROOT'),
                     url
                 ),
                 "object_id": get_object_id(url),
-                "image_url": safe_image_url(prop.select_one("img.decorate__img")["src"])
+                "image_url": safe_image_url(property.select_one("img.decorate__img")["src"])
             }
 
         except Exception as e:
@@ -157,5 +153,5 @@ def safe_image_url(url: str) -> str | None:
         return "https:" + url
 
     if url.startswith("/"):
-        return urljoin(URL_ROOT, url)
+        return urljoin(os.getenv('URL_ROOT'), url)
     return url

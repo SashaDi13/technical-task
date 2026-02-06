@@ -1,22 +1,26 @@
 <nav class="mt-4">
     <ul class="pagination justify-content-center">
-        <li class="page-item {% if not records.has_previous %}disabled{% endif %}">
+        <li class="page-item {% if not properties.has_previous %}disabled{% endif %}">
             <a class="page-link"
-               {% if records.has_previous %}
-                   href="?page={{ records.previous_page_number }}"
+               {% if properties.has_previous %}
+                   href="?page={{ properties.previous_page_number }}"
                {% else %}
                    href="#"
                {% endif %} aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
             </a>
         </li>
-        {% for page_number in records.paginator.page_range %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a></li>
+        {% for page_number in properties.paginator.page_range %}
+            {% if page_number == properties.number  %}
+                <li class="page-item"><p class="page-link text-body-secondary">{{ page_number }}</p></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a></li>
+            {% endif %}
         {% endfor %}
-        <li class="page-item {% if not records.has_next %}disabled{% endif %}">
+        <li class="page-item {% if not properties.has_next %}disabled{% endif %}">
             <a class="page-link"
-               {% if records.has_next %}
-                   href="?page={{ records.next_page_number }}"
+               {% if properties.has_next %}
+                   href="?page={{ properties.next_page_number }}"
                {% else %}
                    href="#"
                {% endif %} aria-label="Next">

@@ -1,4 +1,4 @@
-<div class="modal fade" id="deleteModal{{ record.id }}" tabindex="-1">
+<div class="modal fade" id="deleteModal{{ property.id }}" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
 
@@ -9,11 +9,11 @@
 
       <div class="modal-body">
         <p>Are you sure you want to delete:</p>
-        <strong>{{ record.title }}</strong>
+        <strong>{{ property.title }}</strong>
       </div>
 
       <div class="modal-footer">
-        <form method="post" action="{% url 'delete_property' record.id %}">
+        <form method="post" action="{% url 'delete_property' property.id %}">
           {% csrf_token %}
           <button type="submit" class="btn btn-danger">Yes, delete</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">

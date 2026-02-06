@@ -14,7 +14,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Property',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, 
+                    serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=50)),
                 ('price', models.FloatField(default=0)),
                 ('url', models.URLField(unique=True)),

@@ -1,14 +1,18 @@
-FROM python:3.11-slim
+FROM python:3.11-slim as base
 
-ENV PYTHONDONTWRITEBYCODE=1
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
 COPY requirements.txt /app
-
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
+RUN playwright install --with-deps
+
+FROM base as dev
+COPY requirements-dev.txt /app
+RUN pip install -r requirements-dev.txt
 
 COPY src /app
 

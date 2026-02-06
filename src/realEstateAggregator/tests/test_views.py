@@ -1,13 +1,17 @@
-import pytest
-from django.urls import reverse
-from django.contrib.messages import get_messages
-from realEstateAggregator.models import Property
 from unittest.mock import patch
+
+import pytest
+from django.contrib.messages import get_messages
+from django.urls import reverse
+
+from realEstateAggregator.models import Property
+
 
 @pytest.mark.django_db
 def test_home_view(client):
     property = Property.objects.create(
-        title="Property1", price=100, url="https://example.com/vente/1-test/", address="Addr1", object_id=1
+        title="Property1", price=100, url="https://example.com/vente/1-test/", 
+        address="Addr1", object_id=1
     )
     url = reverse('home')
     response = client.get(url)
@@ -72,7 +76,8 @@ def test_add_property_view_post_invalid(client):
 @pytest.mark.django_db
 def test_update_property_view_get(client):
     property = Property.objects.create(
-        title="PropertyToUpdate", price=100, url="https://example.com/vente/3-test/", address="Addr3", object_id=3
+        title="PropertyToUpdate", price=100, url="https://example.com/vente/3-test/", 
+        address="Addr3", object_id=3
     )
     url = reverse('update_property', kwargs={'id': property.id})
     response = client.get(url)
@@ -85,7 +90,8 @@ def test_update_property_view_get(client):
 @pytest.mark.django_db
 def test_update_property_view_post_success(client):
     property = Property.objects.create(
-        title="OldTitle", price=100, url="https://example.com/vente/4-test/", address="Addr4", object_id=4
+        title="OldTitle", price=100, url="https://example.com/vente/4-test/", 
+        address="Addr4", object_id=4
     )
     url = reverse('update_property', kwargs={'id': property.id})
     data = {
@@ -125,7 +131,8 @@ def test_delete_property_view_get(client):
 @pytest.mark.django_db
 def test_delete_property_view_post(client):
     property = Property.objects.create(
-        title="ToDelete", price=100, url="https://example.com/vente/6-test/", address="Addr6", object_id=6
+        title="ToDelete", price=100, url="https://example.com/vente/6-test/", 
+        address="Addr6", object_id=6
     )
     url = reverse('delete_property', kwargs={'id': property.id})
     response = client.post(url)

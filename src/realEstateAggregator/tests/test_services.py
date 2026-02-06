@@ -1,15 +1,16 @@
-import pytest, os
 from unittest.mock import patch
+
+import pytest
 from bs4 import BeautifulSoup
+
 from realEstateAggregator.scrapper.services import (
-    get_price,
     get_currency,
     get_object_id,
-    safe_image_url,
+    get_price,
     parse_listing,
+    safe_image_url,
     save_property_async,
 )
-
 
 HTML = """
 <article class="property-listing-v2__container">

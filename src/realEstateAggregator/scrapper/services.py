@@ -1,4 +1,7 @@
-import asyncio, logging, re, os
+import asyncio
+import logging
+import os
+import re
 from typing import Generator
 from urllib.parse import urljoin
 
@@ -22,7 +25,11 @@ async def run_scraper_async(max_pages=3):
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(extra_http_headers=HEADERS)
 
-        urls = [urljoin(os.getenv('URL_ROOT'), f"vente/{i}") for i in range(1, max_pages + 1)]
+        urls = [
+            urljoin(
+                os.getenv('URL_ROOT'), f"vente/{i}"
+            ) for i in range(1, max_pages + 1)
+        ]
 
         for url in urls:
             soup = await fetch_page(context, url)
@@ -99,7 +106,9 @@ def parse_listing(soup: BeautifulSoup) -> Generator[dict, None, None]:
                     url
                 ),
                 "object_id": get_object_id(url),
-                "image_url": safe_image_url(property.select_one("img.decorate__img")["src"])
+                "image_url": safe_image_url(
+                    property.select_one("img.decorate__img")["src"]
+                )
             }
 
         except Exception as e:

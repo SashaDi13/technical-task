@@ -6,7 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('realEstateAggregator', '0007_alter_property_object_id_alter_property_url_and_more'),
+        (
+            'realEstateAggregator', 
+            '0007_alter_property_object_id_alter_property_url_and_more'
+        ),
     ]
 
     operations = [

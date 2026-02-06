@@ -1,7 +1,7 @@
-import os, re
+import re
+
 from django import forms
 from django.core.exceptions import ValidationError
-from urllib.parse import urljoin
 
 from .models import Property
 
@@ -9,7 +9,10 @@ from .models import Property
 class PropertyCreateForm(forms.ModelForm):
     class Meta:
         model = Property
-        fields = ["title", "price", "url", "currency", "address", "description", "image_url"]
+        fields = [
+            "title", "price", "url", "currency", 
+            "address", "description", "image_url"
+        ]
 
     def clean_url(self):
         url = self.cleaned_data.get("url")

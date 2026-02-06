@@ -1,6 +1,8 @@
 import pytest
 from pydantic import ValidationError
+
 from realEstateAggregator.scrapper.schemas import PropertySchema
+
 
 def test_property_schema_valid():
     data = {

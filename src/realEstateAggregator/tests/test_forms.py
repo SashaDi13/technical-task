@@ -1,7 +1,8 @@
-import os
 import pytest
+
 from realEstateAggregator.forms import PropertyCreateForm, PropertyUpdateForm
 from realEstateAggregator.models import Property
+
 
 @pytest.fixture
 def valid_data(monkeypatch):
